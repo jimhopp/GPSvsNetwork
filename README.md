@@ -3,6 +3,7 @@ Shows last known GPS and network locations on a Google Map. Can email a link to 
 Stories:
 
 *	Continuous update 
+*	Create own images for app icon, markers.
 * 	Pause/resume
 * 	Show trail of updates
 * 	Draw circle showing possible actual positions based on accuracy
