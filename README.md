@@ -1,6 +1,7 @@
 Shows last known GPS and network locations on a Google Map. Can email a link to an image that shows this. 
 
 Stories:
+
 *	Continuous update 
 * 	Pause/resume
 * 	Show trail of updates
