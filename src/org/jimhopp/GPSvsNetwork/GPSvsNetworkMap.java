@@ -64,16 +64,29 @@ public class GPSvsNetworkMap extends MapActivity {
         if (gps != null) {
         	gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
         			(int) (gps.getLongitude() * 1e6));
-        	overlayitem = new OverlayItem(gPoint, "", "");
+        	overlayitem = new OverlayItem(gPoint, "gps", "");
         	itemizedOverlay.addOverlay(overlayitem);
         	mc.setCenter(gPoint);
         }
         if (network != null) {
         	nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
         						  (int) (network.getLongitude() * 1e6));
-        	overlayitem = new OverlayItem(nPoint, "", "");
+        	overlayitem = new OverlayItem(nPoint, "network", "");
         	itemizedOverlay.addOverlay(overlayitem);
         }
+        if (gps != null && network != null) {
+        	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
+        	double diffLone6 =  Math.abs(gps.getLongitude()  - network.getLongitude()) * 1e6;
+    		mc.zoomToSpan((int)diffLate6, (int)diffLone6);
+
+    		double avgLate6 = (gps.getLatitude() + network.getLatitude())/2 * 1e6;
+    		double avgLone6 = (gps.getLongitude() + network.getLongitude())/2 * 1e6;
+        	Toast toast = Toast.makeText(this, "Avg Lat/Lon = " + avgLate6 + "/" + avgLone6,
+    				Toast.LENGTH_LONG);
+    		toast.show();
+    		mc.setCenter(new GeoPoint((int)avgLate6, (int)avgLone6));
+        }
+        
         
         mapOverlays.add(itemizedOverlay);
     }
