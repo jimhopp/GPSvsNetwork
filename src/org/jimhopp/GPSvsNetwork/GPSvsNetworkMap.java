@@ -29,7 +29,7 @@ import org.jimhopp.GPSvsNetwork.R;
 public class GPSvsNetworkMap extends MapActivity {
 	List<Overlay> mapOverlays;
 	Drawable drawable;
-	LocationOverlay itemizedOverlay;
+	LocationOverlay gpsOverlay, networkOverlay;
 	PhoneLocationModel model;
 	
     /** Called when the activity is first created. */
@@ -49,8 +49,9 @@ public class GPSvsNetworkMap extends MapActivity {
         final MapController mc = mapview.getController();
         mc.setZoom(16);
         mapOverlays = mapview.getOverlays();
-        drawable = this.getResources().getDrawable(R.drawable.androidmarker);
-        itemizedOverlay = new LocationOverlay(drawable);
+        drawable = this.getResources().getDrawable(R.drawable.gps_marker);
+        gpsOverlay = new LocationOverlay(drawable);
+        networkOverlay = new LocationOverlay(this.getResources().getDrawable(R.drawable.network_marker));
         
         LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         model = new PhoneLocationModel(lm);
@@ -60,19 +61,18 @@ public class GPSvsNetworkMap extends MapActivity {
         GeoPoint gPoint, nPoint;
         OverlayItem overlayitem;
         
-        //GeoPoint point = new GeoPoint((int)(37.65584 * 1e6), (int)(-122.40488 * 1e6));
         if (gps != null) {
         	gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
         			(int) (gps.getLongitude() * 1e6));
         	overlayitem = new OverlayItem(gPoint, "gps", "");
-        	itemizedOverlay.addOverlay(overlayitem);
+        	gpsOverlay.addOverlay(overlayitem);
         	mc.setCenter(gPoint);
         }
         if (network != null) {
         	nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
         						  (int) (network.getLongitude() * 1e6));
         	overlayitem = new OverlayItem(nPoint, "network", "");
-        	itemizedOverlay.addOverlay(overlayitem);
+        	networkOverlay.addOverlay(overlayitem);
         }
         if (gps != null && network != null) {
         	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
@@ -88,7 +88,8 @@ public class GPSvsNetworkMap extends MapActivity {
         }
         
         
-        mapOverlays.add(itemizedOverlay);
+        mapOverlays.add(gpsOverlay);
+        mapOverlays.add(networkOverlay);
     }
 
 	@Override
