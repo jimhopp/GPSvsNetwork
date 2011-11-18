@@ -14,6 +14,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -24,21 +25,81 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
+
 import org.jimhopp.GPSvsNetwork.R;
 
 public class GPSvsNetworkMap extends MapActivity {
-	List<Overlay> mapOverlays;
-	Drawable drawable;
-	LocationOverlay gpsOverlay, networkOverlay;
 	PhoneLocationModel model;
+    MapView mapview;
+
+	private Timer timer;
 	
-    /** Called when the activity is first created. */
+	private class Timer implements Runnable {
+
+		private volatile boolean done = false;
+		
+		Handler handler = new Handler();
+		
+		private Runnable updateLocation = new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				updateMarkers();
+			}
+		};
+		
+		public Timer() {
+			// TODO Auto-generated constructor stub
+		}
+		
+		public void done() { done = true; }
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while (!done) {
+				handler.post(updateLocation);
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {}
+			}
+		}
+		
+	}
+	
+	void updateMarkers() {
+		    Location gps = model.getGPSLocation();
+		    Location network = model.getNetworkLocation();
+	        if (gps != null && network != null) {
+	            Drawable gDrawable = this.getResources().getDrawable(R.drawable.gps_marker);
+	        	LocationOverlay gOverlay = new LocationOverlay(gDrawable);
+	        	GeoPoint gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
+	        			(int) (gps.getLongitude() * 1e6));
+	        	OverlayItem gOverlayitem = new OverlayItem(gPoint, "", "");
+	        	gOverlay.addOverlay(gOverlayitem);
+	        	
+	        	Drawable nDrawable = this.getResources().getDrawable(R.drawable.network_marker);
+	        	LocationOverlay nOverlay = new LocationOverlay(nDrawable);
+	        	GeoPoint nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
+	        			(int) (network.getLongitude() * 1e6));
+	        	OverlayItem nOverlayitem = new OverlayItem(nPoint, "", "");
+	        	nOverlay.addOverlay(nOverlayitem);
+	        	
+	            List<Overlay> mapOverlays = mapview.getOverlays();
+		        if (mapOverlays != null) { 
+		        	mapOverlays.clear();
+		        	mapOverlays.add(gOverlay);
+		        	mapOverlays.add(nOverlay);
+		        }
+	        }
+	}
+
+	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MapView mapview;
         setContentView(R.layout.main);
-        
+    	
         mapview = (MapView) findViewById(R.id.mapview);
         mapview.setBuiltInZoomControls(true);
         mapview.setClickable(true); 
@@ -48,31 +109,15 @@ public class GPSvsNetworkMap extends MapActivity {
      // start out with a general zoom 
         final MapController mc = mapview.getController();
         mc.setZoom(16);
-        mapOverlays = mapview.getOverlays();
-        drawable = this.getResources().getDrawable(R.drawable.gps_marker);
-        gpsOverlay = new LocationOverlay(drawable);
-        networkOverlay = new LocationOverlay(this.getResources().getDrawable(R.drawable.network_marker));
         
         LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         model = new PhoneLocationModel(lm);
         
         Location gps = model.getGPSLocation();
         Location network = model.getNetworkLocation();
-        GeoPoint gPoint, nPoint;
-        OverlayItem overlayitem;
         
-        if (gps != null) {
-        	gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
-        			(int) (gps.getLongitude() * 1e6));
-        	overlayitem = new OverlayItem(gPoint, "gps", "");
-        	gpsOverlay.addOverlay(overlayitem);
-        	mc.setCenter(gPoint);
-        }
-        if (network != null) {
-        	nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
-        						  (int) (network.getLongitude() * 1e6));
-        	overlayitem = new OverlayItem(nPoint, "network", "");
-        	networkOverlay.addOverlay(overlayitem);
+        if (gps != null && network != null) {
+        	updateMarkers();
         }
         if (gps != null && network != null) {
         	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
@@ -87,9 +132,8 @@ public class GPSvsNetworkMap extends MapActivity {
     		mc.setCenter(new GeoPoint((int)avgLate6, (int)avgLone6));
         }
         
-        
-        mapOverlays.add(gpsOverlay);
-        mapOverlays.add(networkOverlay);
+        timer = new Timer();
+        new Thread(timer).start();
     }
 
 	@Override
@@ -115,12 +159,15 @@ public class GPSvsNetworkMap extends MapActivity {
 			Location locG = model.getGPSLocation();
 			Location locN = model.getNetworkLocation();
 			String body;
+            List<Overlay> mapOverlays = mapview.getOverlays();
+            int itemCnt = mapOverlays.size();
 			if (locG != null && locN != null) {
 				String text = "My current locations:\n" +
 						"GPS    : "	+ (locG != null ? locG.getLatitude() : -999)
 						+ ", " + (locG != null ? locG.getLongitude() : -999) + "\n" 
 						+ "Network: "	+ (locN != null ? locN.getLatitude() : -999)
-						+ ", " + (locN != null ? locN.getLongitude() : -999);
+						+ ", " + (locN != null ? locN.getLongitude() : -999) + "\n"
+						+ "Number of items in the list: " + itemCnt;
 				String qmap_link;
 				try {
 					String query_string = "size=512x512"
@@ -156,6 +203,7 @@ public class GPSvsNetworkMap extends MapActivity {
 			return true;
 			
 		case 2: 
+			timer.done();
 			finish();
 			return true;
 
