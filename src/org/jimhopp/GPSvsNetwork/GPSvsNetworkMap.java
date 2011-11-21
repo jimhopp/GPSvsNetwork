@@ -64,7 +64,6 @@ public class GPSvsNetworkMap extends MapActivity {
 				} catch (InterruptedException e) {}
 			}
 		}
-		
 	}
 	
 	void updateMarkers() {
@@ -91,6 +90,15 @@ public class GPSvsNetworkMap extends MapActivity {
 		        	mapOverlays.add(gOverlay);
 		        	mapOverlays.add(nOverlay);
 		        }
+		        final MapController mc = mapview.getController();
+	        	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
+	        	double diffLone6 =  Math.abs(gps.getLongitude()  - network.getLongitude()) * 1e6;
+	        	//add a padding factor
+	    		mc.zoomToSpan((int)(diffLate6 * 1.1), (int)(diffLone6 * 1.1));
+
+	    		double avgLate6 = (gps.getLatitude() + network.getLatitude())/2 * 1e6;
+	    		double avgLone6 = (gps.getLongitude() + network.getLongitude())/2 * 1e6;
+	    		mc.setCenter(new GeoPoint((int)avgLate6, (int)avgLone6));
 	        }
 	}
 
@@ -118,18 +126,6 @@ public class GPSvsNetworkMap extends MapActivity {
         
         if (gps != null && network != null) {
         	updateMarkers();
-        }
-        if (gps != null && network != null) {
-        	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
-        	double diffLone6 =  Math.abs(gps.getLongitude()  - network.getLongitude()) * 1e6;
-    		mc.zoomToSpan((int)diffLate6, (int)diffLone6);
-
-    		double avgLate6 = (gps.getLatitude() + network.getLatitude())/2 * 1e6;
-    		double avgLone6 = (gps.getLongitude() + network.getLongitude())/2 * 1e6;
-        	Toast toast = Toast.makeText(this, "Avg Lat/Lon = " + avgLate6 + "/" + avgLone6,
-    				Toast.LENGTH_LONG);
-    		toast.show();
-    		mc.setCenter(new GeoPoint((int)avgLate6, (int)avgLone6));
         }
         
         timer = new Timer();
