@@ -2,7 +2,7 @@ Shows last known GPS and network locations on a Google Map. Can email a link to 
 
 Stories:
 
-*	Continuous update 
+*	Pan to new location rather than repaint
 *	Create own images for app icon.
 * 	Pause/resume
 * 	Show trail of updates
