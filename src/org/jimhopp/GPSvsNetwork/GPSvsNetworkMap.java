@@ -93,12 +93,12 @@ public class GPSvsNetworkMap extends MapActivity {
 		        final MapController mc = mapview.getController();
 	        	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
 	        	double diffLone6 =  Math.abs(gps.getLongitude()  - network.getLongitude()) * 1e6;
-	        	//add a padding factor
-	    		mc.zoomToSpan((int)(diffLate6 * 1.1), (int)(diffLone6 * 1.1));
 
 	    		double avgLate6 = (gps.getLatitude() + network.getLatitude())/2 * 1e6;
 	    		double avgLone6 = (gps.getLongitude() + network.getLongitude())/2 * 1e6;
-	    		mc.setCenter(new GeoPoint((int)avgLate6, (int)avgLone6));
+	    		mc.animateTo(new GeoPoint((int)avgLate6, (int)avgLone6));
+	        	//add a padding factor
+	    		mc.zoomToSpan((int)(diffLate6 * 1.1), (int)(diffLone6 * 1.1));
 	        }
 	}
 
