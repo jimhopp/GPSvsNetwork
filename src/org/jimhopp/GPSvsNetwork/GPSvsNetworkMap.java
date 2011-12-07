@@ -119,7 +119,7 @@ public class GPSvsNetworkMap extends MapActivity {
         mc.setZoom(16);
         
         LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        model = new PhoneLocationModel(lm);
+        model = new PhoneLocationModel(lm, this);
         
         Location gps = model.getGPSLocation();
         Location network = model.getNetworkLocation();
@@ -140,7 +140,8 @@ public class GPSvsNetworkMap extends MapActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 	    menu.add(Menu.NONE, 1, Menu.NONE, "Email Location").setAlphabeticShortcut('e');
-	    menu.add(Menu.NONE, 2, Menu.NONE, "Exit").setAlphabeticShortcut('x');
+	    menu.add(Menu.NONE, 2, Menu.NONE, "Dump locations").setAlphabeticShortcut('d');
+	    menu.add(Menu.NONE, 3, Menu.NONE, "Exit").setAlphabeticShortcut('x');
 	    return true;
 	}
 
@@ -149,7 +150,8 @@ public class GPSvsNetworkMap extends MapActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
+		Intent email;
+		Uri addr;
 		switch (item.getItemId()) {
 		case 1:
 			Location locG = model.getGPSLocation();
@@ -183,12 +185,11 @@ public class GPSvsNetworkMap extends MapActivity {
 			else {
 				body = "(location unknown!)";
 			}			
-			Uri addr = Uri.fromParts("mailto", "jimhopp@gmail.com", null);
-			Intent email = new Intent(Intent.ACTION_SENDTO, addr);
+			addr = Uri.fromParts("mailto", "jimhopp@gmail.com", null);
+			email = new Intent(Intent.ACTION_SENDTO, addr);
 			email.putExtra(Intent.EXTRA_TEXT, body);
 			email.putExtra(Intent.EXTRA_SUBJECT, "my location");
-			PackageManager pm = getPackageManager();
-			if (pm.resolveActivity(email, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+			if (getPackageManager().resolveActivity(email, PackageManager.MATCH_DEFAULT_ONLY) != null) {
 				startActivity(email);
 			}
 			else {
@@ -199,6 +200,20 @@ public class GPSvsNetworkMap extends MapActivity {
 			return true;
 			
 		case 2: 
+			addr = Uri.fromParts("mailto", "jimhopp@gmail.com", null);
+			email = new Intent(Intent.ACTION_SENDTO, addr);
+			email.putExtra(Intent.EXTRA_TEXT, model.dumpLocations());
+			email.putExtra(Intent.EXTRA_SUBJECT, "my locations");
+			if (getPackageManager().resolveActivity(email, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+				startActivity(email);
+			}
+			else {
+				Toast toast = Toast.makeText(this, "Sorry, cannot find an editor on this device",
+						Toast.LENGTH_SHORT);
+				toast.show();			
+			}
+			return true;
+		case 3: 
 			timer.done();
 			finish();
 			return true;
