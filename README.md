@@ -3,10 +3,15 @@ Shows last known GPS and network locations on a Google Map. Can email a link to 
 Stories:
 
 #	Create own images for app icon.
+#   Move db access, manipulation into content provider
+#   Create service to record positions in background
+#   Notification bar for status?
 # 	Delete recorded positions
 #   Upload recorded positions to web site
 # 	Pause/resume
-# 	Show trail of updates
+# 	Show trail of updates on device
+#   Show trail of updates on web site
+#   Map view that shows frequency of position (with shading?)
 #   Display always on
 # 	Draw circle showing possible actual positions based on accuracy
 # 	Indicate speed and direction
