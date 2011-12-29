@@ -1,5 +1,9 @@
 package org.jimhopp.GPSvsNetwork.model;
 
+import org.jimhopp.GPSvsNetwork.provider.LocationContentProvider;
+import org.jimhopp.GPSvsNetwork.provider.LocationsContentProvider;
+
+import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -7,6 +11,7 @@ import android.database.SQLException;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -16,14 +21,16 @@ public class PhoneLocationModel {
 	//calculates age of fixes
 	//notifies view to update fields?
 	
+	private Context ctxt;
 	public Location lastLocGPS;
 	public Location lastLocNetwork;
-	public LocationOpenHelper dbh;
-	
+	//public LocationOpenHelper dbh;
+	ContentProvider loccp;
 	
 	public PhoneLocationModel(LocationManager lm, Context ctxt) {
-        dbh = new LocationOpenHelper(ctxt);
-        Log.i(this.getClass().getSimpleName(), "instantiated db handler");		
+		this.ctxt = ctxt;
+        //dbh = new LocationOpenHelper(ctxt);
+        //Log.i(this.getClass().getSimpleName(), "instantiated db handler");		
 		LocationListener locationGPS = new LocationListener() {
 			@Override
 			public void onLocationChanged(Location location) { updateGPS(location); }
@@ -73,35 +80,33 @@ public class PhoneLocationModel {
 	
 	void recordLocation(Location loc, String tag) {
 		ContentValues map = new ContentValues(); 
-		map.put(LocationOpenHelper.TIME_COL, loc != null ? loc.getTime() : System.currentTimeMillis()); 
-		map.put(LocationOpenHelper.TYPE_COL, tag);
-		map.put(LocationOpenHelper.LAT_COL, loc != null ? loc.getLatitude() : 0);
-		map.put(LocationOpenHelper.LON_COL, loc != null ? loc.getLongitude() : 0);
-		map.put(LocationOpenHelper.ACCURACY_COL, loc != null ? loc.getAccuracy(): 10000000.0);
-		if (dbh == null) {
-			throw new RuntimeException("dbh is null");
-		}
-		Log.i(this.getClass().getSimpleName(), "inserting " + map.toString());
-		try{ dbh.getWritableDatabase().insert(LocationOpenHelper.LOCATIONS_TABLE_NAME, null, map);
-		} catch (SQLException e) { Log.e("Error writing new location", e.toString());
-		}
+		map.put(LocationsContentProvider.TIME_COL, loc != null ? loc.getTime() : System.currentTimeMillis()); 
+		map.put(LocationsContentProvider.TYPE_COL, tag);
+		map.put(LocationsContentProvider.LAT_COL, loc != null ? loc.getLatitude() : 0);
+		map.put(LocationsContentProvider.LON_COL, loc != null ? loc.getLongitude() : 0);
+		map.put(LocationsContentProvider.ACCURACY_COL, loc != null ? loc.getAccuracy(): 10000000.0);
+		//if (dbh == null) {
+		//	throw new RuntimeException("dbh is null");
+		//}
+		Log.i(this.getClass().getSimpleName(), "calling content provider to insert " + map.toString());
+		//try{ dbh.getWritableDatabase().insert(LocationOpenHelper.LOCATIONS_TABLE_NAME, null, map);
+		//} catch (SQLException e) { Log.e("Error writing new location", e.toString());
+		//}
+		ctxt.getContentResolver().insert(LocationContentProvider.LOCATIONS_URI, map);
 	}
 
 	public String dumpLocations() {
-		// TODO Auto-generated method stub
 		try {
-			Cursor cursor = dbh.getReadableDatabase().query(
-					LocationOpenHelper.LOCATIONS_TABLE_NAME,     //table name   
-					LocationOpenHelper.COL_NAMES,                 //columns in SELECT clause
-					null,                                        //selection, we want all rows 
-					null,                                        //selection args
-					null,                                        //group by
-					null,                                        //having
-					LocationOpenHelper.TIME_COL + " ASC"); //sort order
+			Cursor cursor = ctxt.getContentResolver().query(
+					Uri.withAppendedPath(LocationContentProvider.LOCATIONS_URI, "/all"),      //uri                                   //selection, we want all rows 
+					null,                                       //projections
+					null,                                       //group by
+					null,                                       //having
+					null);  									//sort order
 			Log.i(this.getClass().getSimpleName(), "dumpLocations(): got " 
-			     + cursor.getCount() + " rows");
+			     + cursor.getCount() + " rows and " + cursor.getColumnCount() + " columns");
 			
-			int nCols = LocationOpenHelper.ALL_COLS.length;
+			int nCols = cursor.getColumnCount();
 			StringBuilder strbuf = new StringBuilder("Locations: " + cursor.getCount() 
 					+ " rows\n| ");
 			boolean more = cursor.moveToNext();
@@ -111,11 +116,11 @@ public class PhoneLocationModel {
 			while (more) {
 				strbuf.append("\n| ");
 				for (int i=0;i<nCols;i++) {
-					if (LocationOpenHelper.ALL_COLS[i][1] == "INTEGER") {
+					if (LocationsContentProvider.ALL_COLS[i][1].startsWith("INTEGER")) {
 						strbuf.append(cursor.getInt(i));
-					} else if (LocationOpenHelper.ALL_COLS[i][1] == "REAL") {
+					} else if (LocationsContentProvider.ALL_COLS[i][1] == "REAL") {
 						strbuf.append(cursor.getFloat(i));
-					} else if (LocationOpenHelper.ALL_COLS[i][1] == "TEXT") {
+					} else if (LocationsContentProvider.ALL_COLS[i][1] == "TEXT") {
 						strbuf.append(cursor.getString(i));
 					} else {
 						strbuf.append("(null or blob)");
