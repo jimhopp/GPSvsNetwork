@@ -94,7 +94,7 @@ public class LocationsContentProvider extends ContentProvider {
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new RuntimeException("delete not supported");
 	}
 
 	@Override
@@ -152,7 +152,6 @@ public class LocationsContentProvider extends ContentProvider {
 
         switch (match) {
             case ALL_LOCS:
-                // query the database for all videos
                 c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         null, null,
                         null, null, orderBy);
@@ -173,7 +172,7 @@ public class LocationsContentProvider extends ContentProvider {
 	public int update(Uri uri, ContentValues values, String selection,
 			String[] selectionArgs) {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new RuntimeException("update not supported");
 	}
 
 }
