@@ -93,7 +93,6 @@ public class LocationsContentProvider extends ContentProvider {
     
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		// TODO Auto-generated method stub
 		throw new RuntimeException("delete not supported");
 	}
 

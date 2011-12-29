@@ -24,13 +24,10 @@ public class PhoneLocationModel {
 	private Context ctxt;
 	public Location lastLocGPS;
 	public Location lastLocNetwork;
-	//public LocationOpenHelper dbh;
 	ContentProvider loccp;
 	
 	public PhoneLocationModel(LocationManager lm, Context ctxt) {
 		this.ctxt = ctxt;
-        //dbh = new LocationOpenHelper(ctxt);
-        //Log.i(this.getClass().getSimpleName(), "instantiated db handler");		
 		LocationListener locationGPS = new LocationListener() {
 			@Override
 			public void onLocationChanged(Location location) { updateGPS(location); }
@@ -62,7 +59,6 @@ public class PhoneLocationModel {
 
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 30000l, Float.valueOf("10.0"),
         	locationNetwork);
-
 	}
 	
 	public Location getGPSLocation() { return lastLocGPS; }
@@ -85,14 +81,9 @@ public class PhoneLocationModel {
 		map.put(LocationsContentProvider.LAT_COL, loc != null ? loc.getLatitude() : 0);
 		map.put(LocationsContentProvider.LON_COL, loc != null ? loc.getLongitude() : 0);
 		map.put(LocationsContentProvider.ACCURACY_COL, loc != null ? loc.getAccuracy(): 10000000.0);
-		//if (dbh == null) {
-		//	throw new RuntimeException("dbh is null");
-		//}
 		Log.i(this.getClass().getSimpleName(), "calling content provider to insert " + map.toString());
-		//try{ dbh.getWritableDatabase().insert(LocationOpenHelper.LOCATIONS_TABLE_NAME, null, map);
-		//} catch (SQLException e) { Log.e("Error writing new location", e.toString());
-		//}
-		ctxt.getContentResolver().insert(LocationContentProvider.LOCATIONS_URI, map);
+		Uri url = ctxt.getContentResolver().insert(LocationContentProvider.LOCATIONS_URI, map);
+		Log.i(this.getClass().getSimpleName(), "inserted URL " + url.toString());
 	}
 
 	public String dumpLocations() {
@@ -117,7 +108,7 @@ public class PhoneLocationModel {
 				strbuf.append("\n| ");
 				for (int i=0;i<nCols;i++) {
 					if (LocationsContentProvider.ALL_COLS[i][1].startsWith("INTEGER")) {
-						strbuf.append(cursor.getInt(i));
+						strbuf.append(cursor.getLong(i));
 					} else if (LocationsContentProvider.ALL_COLS[i][1] == "REAL") {
 						strbuf.append(cursor.getFloat(i));
 					} else if (LocationsContentProvider.ALL_COLS[i][1] == "TEXT") {
