@@ -5,16 +5,19 @@ import java.net.URLEncoder;
 import java.util.List;
 
 import org.jimhopp.GPSvsNetwork.model.PhoneLocationModel;
+import org.jimhopp.GPSvsNetwork.provider.LocationContentProvider;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -31,6 +34,19 @@ import org.jimhopp.GPSvsNetwork.R;
 public class GPSvsNetworkMap extends MapActivity {
 	PhoneLocationModel model;
     MapView mapview;
+    
+    private class LocationObserver extends ContentObserver {
+
+		public LocationObserver(Handler handler) {
+			super(handler);
+			// TODO Auto-generated constructor stub
+		}
+    
+		public void onChange (boolean selfChange) {
+			Log.i(this.getClass().getSimpleName(), "onChange() called");
+			updateMarkers();
+		}
+    }
 
 	private Timer timer;
 	
@@ -67,8 +83,10 @@ public class GPSvsNetworkMap extends MapActivity {
 	}
 	
 	void updateMarkers() {
+		    Log.i(this.getClass().getSimpleName(), "updateMarkers called");
 		    Location gps = model.getGPSLocation();
 		    Location network = model.getNetworkLocation();
+		    //TODO: draw GPS and network markers separately.
 	        if (gps != null && network != null) {
 	            Drawable gDrawable = this.getResources().getDrawable(R.drawable.gps_marker);
 	        	LocationOverlay gOverlay = new LocationOverlay(gDrawable);
@@ -100,6 +118,7 @@ public class GPSvsNetworkMap extends MapActivity {
 	        	//add a padding factor
 	    		mc.zoomToSpan((int)(diffLate6 * 1.1), (int)(diffLone6 * 1.1));
 	        }
+	        else {Log.i(this.getClass().getSimpleName(), "GPS or Network null");}
 	}
 
 	/** Called when the activity is first created. */
@@ -128,8 +147,12 @@ public class GPSvsNetworkMap extends MapActivity {
         	updateMarkers();
         }
         
-        timer = new Timer();
-        new Thread(timer).start();
+        //timer = new Timer();
+        //new Thread(timer).start();
+        
+        LocationObserver locObs = new LocationObserver(new Handler());
+        this.getContentResolver().registerContentObserver(LocationContentProvider.LOCATIONS_URI, 
+        		true, locObs);
     }
 
 	@Override
@@ -214,7 +237,7 @@ public class GPSvsNetworkMap extends MapActivity {
 			}
 			return true;
 		case 3: 
-			timer.done();
+			//timer.done();
 			finish();
 			return true;
 

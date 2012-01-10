@@ -24,7 +24,7 @@ public class PhoneLocationModel {
 	private Context ctxt;
 	public Location lastLocGPS;
 	public Location lastLocNetwork;
-	ContentProvider loccp;
+	//ContentProvider loccp;
 	
 	public PhoneLocationModel(LocationManager lm, Context ctxt) {
 		this.ctxt = ctxt;
@@ -61,9 +61,14 @@ public class PhoneLocationModel {
         	locationNetwork);
 	}
 	
-	public Location getGPSLocation() { return lastLocGPS; }
+	public Location getGPSLocation() { 
+		//TODO: this should get the most recent GPS location from the content provider
+		return lastLocGPS; 
+	}
 	
-	public Location getNetworkLocation() { return lastLocNetwork; }
+	public Location getNetworkLocation() { 
+	    //TODO: this should get the most recent network location from the content provider	
+		return lastLocNetwork; }
 	void updateGPS(Location loc) {
 		lastLocGPS = loc;
 		recordLocation(loc, "GPS");
