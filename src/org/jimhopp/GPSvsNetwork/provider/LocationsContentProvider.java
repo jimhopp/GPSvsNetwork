@@ -50,7 +50,8 @@ public class LocationsContentProvider extends ContentProvider {
 	
     private static final int ALL_LOCS = 1;
     private static final int ONE_LOC = 2;
-    private static final int LAST_LOC = 3;
+    private static final int LAST_GPS_LOC = 3;
+    private static final int LAST_NETWORK_LOC = 4;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -61,7 +62,9 @@ public class LocationsContentProvider extends ContentProvider {
         sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
         		LocationContentProvider.LOCATION_PATH + "/#", ONE_LOC);
         sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
-        		LocationContentProvider.LOCATION_PATH + "/last", LAST_LOC);
+        		LocationContentProvider.LOCATION_PATH + "/lastgps", LAST_GPS_LOC);
+        sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
+        		LocationContentProvider.LOCATION_PATH + "/lastnetwork", LAST_NETWORK_LOC);
     }
     
     LocationOpenHelper dbh;
@@ -104,7 +107,8 @@ public class LocationsContentProvider extends ContentProvider {
             case ALL_LOCS:
                 return "vnd.android.cursor.dir/vnd.jimhopp.location";
             case ONE_LOC:
-            case LAST_LOC:
+            case LAST_GPS_LOC:
+            case LAST_NETWORK_LOC:
             	return "vnd.android.cursor.dir/vnd.jimhopp.location";
             case UriMatcher.NO_MATCH:
             	throw new RuntimeException("unmatched URI: " + uri);
@@ -152,13 +156,37 @@ public class LocationsContentProvider extends ContentProvider {
         switch (match) {
             case ALL_LOCS:
                 c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
-                        null, null,
-                        null, null, orderBy);
+                        null, 
+                        null,
+                        null, 
+                        null, 
+                        orderBy);
                 c.setNotificationUri(getContext().getContentResolver(),
                         LocationContentProvider.LOCATIONS_URI);
                 break;
+            case LAST_GPS_LOC:
+            	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
+                        BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
+                        + "where " + TYPE_COL + "='GPS')",
+                        null,
+                        null, 
+                        null, 
+                        orderBy);
+                c.setNotificationUri(getContext().getContentResolver(),
+                        LocationContentProvider.LOCATIONS_URI);
+            	break;
+            case LAST_NETWORK_LOC:
+            	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
+                        BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
+                        + "where " + TYPE_COL + "='Network')",
+                        null,
+                        null, 
+                        null, 
+                        orderBy);
+                c.setNotificationUri(getContext().getContentResolver(),
+                        LocationContentProvider.LOCATIONS_URI);
+            	break;
             case ONE_LOC:
-            case LAST_LOC:
             	throw new IllegalArgumentException("not yet supported: " + uri);
             default:
                 throw new IllegalArgumentException("unsupported uri: " + uri);

@@ -61,14 +61,31 @@ public class PhoneLocationModel {
         	locationNetwork);
 	}
 	
-	public Location getGPSLocation() { 
-		//TODO: this should get the most recent GPS location from the content provider
-		return lastLocGPS; 
+	public Location getLocation(String path) { 
+		Cursor cursor = ctxt.getContentResolver().query(
+				Uri.withAppendedPath(LocationContentProvider.LOCATIONS_URI, "/" + path),      //uri                                   //selection, we want all rows 
+				null,                                       //projections
+				null,                                       //select stmt
+				null,                                       //selection args
+				null);  									//sort order
+		Log.i(this.getClass().getSimpleName(), "getGPSLocation(): got " + cursor.getCount() 
+				+ " rows");
+		Location loc = null;
+		if (cursor.moveToLast()) {
+		    loc = new Location("GPS");
+		    loc.setAccuracy(cursor.getFloat(cursor.getColumnIndex(LocationsContentProvider.ACCURACY_COL)));
+		    loc.setLatitude(cursor.getDouble(cursor.getColumnIndex(LocationsContentProvider.LAT_COL)));
+		    loc.setLongitude(cursor.getDouble(cursor.getColumnIndex(LocationsContentProvider.LON_COL)));
+		    loc.setTime(cursor.getLong(cursor.getColumnIndex(LocationsContentProvider.TIME_COL)));
+		}
+		cursor.close();
+		return loc; 
 	}
 	
-	public Location getNetworkLocation() { 
-	    //TODO: this should get the most recent network location from the content provider	
-		return lastLocNetwork; }
+	public Location getGPSLocation() { return getLocation("lastgps"); }
+	
+	public Location getNetworkLocation() { return getLocation("lastnetwork"); }
+	
 	void updateGPS(Location loc) {
 		lastLocGPS = loc;
 		recordLocation(loc, "GPS");
@@ -125,6 +142,7 @@ public class PhoneLocationModel {
 				}
 				more = cursor.moveToNext();
 			}
+			cursor.close();
 			return strbuf.toString();
 		} catch (SQLException e) {
 			Log.e("Error trying to dump locations", e.toString());
