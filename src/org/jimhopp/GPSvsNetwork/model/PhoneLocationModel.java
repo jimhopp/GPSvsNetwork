@@ -16,15 +16,8 @@ import android.os.Bundle;
 import android.util.Log;
 
 public class PhoneLocationModel {
-	//maintains time and current location
-	//has callbacks for new fixes, time update
-	//calculates age of fixes
-	//notifies view to update fields?
 	
 	private Context ctxt;
-	public Location lastLocGPS;
-	public Location lastLocNetwork;
-	//ContentProvider loccp;
 	
 	public PhoneLocationModel(LocationManager lm, Context ctxt) {
 		this.ctxt = ctxt;
@@ -82,18 +75,20 @@ public class PhoneLocationModel {
 		return loc; 
 	}
 	
-	public Location getGPSLocation() { return getLocation("lastgps"); }
+	public Location getGPSLocation() { 
+		return getLocation(LocationContentProvider.LAST_LOCATION_GPS); 
+	}
 	
-	public Location getNetworkLocation() { return getLocation("lastnetwork"); }
+	public Location getNetworkLocation() { 
+		return getLocation(LocationContentProvider.LAST_LOCATION_NETWORK);
+	}
 	
 	void updateGPS(Location loc) {
-		lastLocGPS = loc;
-		recordLocation(loc, "GPS");
+		recordLocation(loc, LocationContentProvider.GPS);
 	}
 	
 	void updateNetwork(Location loc) {
-		lastLocNetwork = loc;
-		recordLocation(loc, "Network");
+		recordLocation(loc, LocationContentProvider.NETWORK);
 	}
 	
 	void recordLocation(Location loc, String tag) {

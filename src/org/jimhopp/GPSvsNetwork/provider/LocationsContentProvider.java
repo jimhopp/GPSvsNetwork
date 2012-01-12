@@ -52,6 +52,8 @@ public class LocationsContentProvider extends ContentProvider {
     private static final int ONE_LOC = 2;
     private static final int LAST_GPS_LOC = 3;
     private static final int LAST_NETWORK_LOC = 4;
+    
+    
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -62,9 +64,11 @@ public class LocationsContentProvider extends ContentProvider {
         sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
         		LocationContentProvider.LOCATION_PATH + "/#", ONE_LOC);
         sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
-        		LocationContentProvider.LOCATION_PATH + "/lastgps", LAST_GPS_LOC);
+        		LocationContentProvider.LOCATION_PATH + "/" 
+                + LocationContentProvider.LAST_LOCATION_GPS, LAST_GPS_LOC);
         sURIMatcher.addURI(LocationContentProvider.AUTHORITY, 
-        		LocationContentProvider.LOCATION_PATH + "/lastnetwork", LAST_NETWORK_LOC);
+        		LocationContentProvider.LOCATION_PATH + "/" 
+                + LocationContentProvider.LAST_LOCATION_NETWORK, LAST_NETWORK_LOC);
     }
     
     LocationOpenHelper dbh;
@@ -167,7 +171,8 @@ public class LocationsContentProvider extends ContentProvider {
             case LAST_GPS_LOC:
             	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
-                        + "where " + TYPE_COL + "='GPS')",
+                        + "where " + TYPE_COL + "='" 
+                        + LocationContentProvider.LAST_LOCATION_GPS + "')",
                         null,
                         null, 
                         null, 
@@ -178,7 +183,8 @@ public class LocationsContentProvider extends ContentProvider {
             case LAST_NETWORK_LOC:
             	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
-                        + "where " + TYPE_COL + "='Network')",
+                        + "where " + TYPE_COL + "='" 
+                        + LocationContentProvider.LAST_LOCATION_NETWORK + "')",
                         null,
                         null, 
                         null, 
