@@ -61,8 +61,8 @@ public class PhoneLocationModel {
 				null,                                       //select stmt
 				null,                                       //selection args
 				null);  									//sort order
-		Log.i(this.getClass().getSimpleName(), "getGPSLocation(): got " + cursor.getCount() 
-				+ " rows");
+		Log.i(this.getClass().getSimpleName(), "getLocation(): got " + cursor.getCount() 
+				+ " rows for " + path);
 		Location loc = null;
 		if (cursor.moveToLast()) {
 		    loc = new Location("GPS");

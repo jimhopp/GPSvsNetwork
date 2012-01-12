@@ -169,10 +169,11 @@ public class LocationsContentProvider extends ContentProvider {
                         LocationContentProvider.LOCATIONS_URI);
                 break;
             case LAST_GPS_LOC:
+            	//this is returning more than one row
             	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
                         + "where " + TYPE_COL + "='" 
-                        + LocationContentProvider.LAST_LOCATION_GPS + "')",
+                        + LocationContentProvider.GPS + "')",
                         null,
                         null, 
                         null, 
@@ -184,7 +185,7 @@ public class LocationsContentProvider extends ContentProvider {
             	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
                         + "where " + TYPE_COL + "='" 
-                        + LocationContentProvider.LAST_LOCATION_NETWORK + "')",
+                        + LocationContentProvider.NETWORK + "')",
                         null,
                         null, 
                         null, 
