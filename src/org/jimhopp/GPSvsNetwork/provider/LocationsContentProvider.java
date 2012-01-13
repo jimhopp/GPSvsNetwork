@@ -169,7 +169,6 @@ public class LocationsContentProvider extends ContentProvider {
                         LocationContentProvider.LOCATIONS_URI);
                 break;
             case LAST_GPS_LOC:
-            	//this is returning more than one row
             	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
                         BaseColumns._ID  + " in (select max(" + BaseColumns._ID + ") "
                         + "from " + LOCATIONS_TABLE_NAME + " where " + TYPE_COL + "='" 
