@@ -3,7 +3,6 @@ Shows last known GPS and network locations on a Google Map. Can email a link to 
 Stories:
 
 #   Create own images for app icon.
-#   Register a ContentObserver in the view, and get rid of the timer loop polling for updates.
 #   Create service to record positions in background
 #   Notification bar for status?
 #   Delete recorded positions
