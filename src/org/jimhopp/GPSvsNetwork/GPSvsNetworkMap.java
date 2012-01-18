@@ -33,142 +33,121 @@ import org.jimhopp.GPSvsNetwork.R;
 
 public class GPSvsNetworkMap extends MapActivity {
 	PhoneLocationModel model;
-    MapView mapview;
-    
-    private class LocationObserver extends ContentObserver {
+	MapView mapview;
+
+	private class LocationObserver extends ContentObserver {
 
 		public LocationObserver(Handler handler) {
 			super(handler);
-			// TODO Auto-generated constructor stub
 		}
-    
-		public void onChange (boolean selfChange) {
+
+		public void onChange(boolean selfChange) {
 			Log.i(this.getClass().getSimpleName(), "onChange() called");
 			updateMarkers();
 		}
-    }
-
-	private Timer timer;
-	
-	private class Timer implements Runnable {
-
-		private volatile boolean done = false;
-		
-		Handler handler = new Handler();
-		
-		private Runnable updateLocation = new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				updateMarkers();
-			}
-		};
-		
-		public Timer() {
-			// TODO Auto-generated constructor stub
-		}
-		
-		public void done() { done = true; }
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while (!done) {
-				handler.post(updateLocation);
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException e) {}
-			}
-		}
 	}
-	
-	void updateMarkers() {
-		    Log.i(this.getClass().getSimpleName(), "updateMarkers called");
-		    Location gps = model.getGPSLocation();
-		    Location network = model.getNetworkLocation();
-		    //TODO: draw GPS and network markers separately.
-	        if (gps != null && network != null) {
-	            Drawable gDrawable = this.getResources().getDrawable(R.drawable.gps_marker);
-	        	LocationOverlay gOverlay = new LocationOverlay(gDrawable);
-	        	GeoPoint gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
-	        			(int) (gps.getLongitude() * 1e6));
-	        	OverlayItem gOverlayitem = new OverlayItem(gPoint, "", "");
-	        	gOverlay.addOverlay(gOverlayitem);
-	        	
-	        	Drawable nDrawable = this.getResources().getDrawable(R.drawable.network_marker);
-	        	LocationOverlay nOverlay = new LocationOverlay(nDrawable);
-	        	GeoPoint nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
-	        			(int) (network.getLongitude() * 1e6));
-	        	OverlayItem nOverlayitem = new OverlayItem(nPoint, "", "");
-	        	nOverlay.addOverlay(nOverlayitem);
-	        	
-	            List<Overlay> mapOverlays = mapview.getOverlays();
-		        if (mapOverlays != null) { 
-		        	mapOverlays.clear();
-		        	mapOverlays.add(gOverlay);
-		        	mapOverlays.add(nOverlay);
-		        }
-		        final MapController mc = mapview.getController();
-	        	double diffLate6 =  Math.abs(gps.getLatitude()  - network.getLatitude()) * 1e6;
-	        	double diffLone6 =  Math.abs(gps.getLongitude()  - network.getLongitude()) * 1e6;
 
-	    		double avgLate6 = (gps.getLatitude() + network.getLatitude())/2 * 1e6;
-	    		double avgLone6 = (gps.getLongitude() + network.getLongitude())/2 * 1e6;
-	    		mc.animateTo(new GeoPoint((int)avgLate6, (int)avgLone6));
-	        	//add a padding factor
-	    		mc.zoomToSpan((int)(diffLate6 * 1.1), (int)(diffLone6 * 1.1));
-	        }
-	        else {Log.i(this.getClass().getSimpleName(), "GPS or Network null");}
+	void updateMarkers() {
+		Log.i(this.getClass().getSimpleName(), "updateMarkers called");
+		Location gps = model.getGPSLocation();
+		Location network = model.getNetworkLocation();
+		LocationOverlay gOverlay = null, nOverlay = null;
+		if (gps != null) {
+			Drawable gDrawable = this.getResources().getDrawable(
+					R.drawable.gps_marker);
+			gOverlay = new LocationOverlay(gDrawable);
+			GeoPoint gPoint = new GeoPoint((int) (gps.getLatitude() * 1e6),
+					(int) (gps.getLongitude() * 1e6));
+			OverlayItem gOverlayitem = new OverlayItem(gPoint, "", "");
+			gOverlay.addOverlay(gOverlayitem);
+		}
+		if (network != null) {
+			Drawable nDrawable = this.getResources().getDrawable(
+					R.drawable.network_marker);
+			nOverlay = new LocationOverlay(nDrawable);
+			GeoPoint nPoint = new GeoPoint((int) (network.getLatitude() * 1e6),
+					(int) (network.getLongitude() * 1e6));
+			OverlayItem nOverlayitem = new OverlayItem(nPoint, "", "");
+			nOverlay.addOverlay(nOverlayitem);
+		}
+		List<Overlay> mapOverlays = mapview.getOverlays();
+		if (mapOverlays != null) {
+			mapOverlays.clear();
+			if (gOverlay != null) {
+				mapOverlays.add(gOverlay);
+			}
+			if (nOverlay != null) {
+				mapOverlays.add(nOverlay);
+			}
+		}
+
+		final MapController mc = mapview.getController();
+		if (gps != null && network != null) {
+			double diffLate6 = Math.abs(gps.getLatitude()
+					- network.getLatitude()) * 1e6;
+			double diffLone6 = Math.abs(gps.getLongitude()
+					- network.getLongitude()) * 1e6;
+
+			double avgLate6 = (gps.getLatitude() + network.getLatitude()) / 2 * 1e6;
+			double avgLone6 = (gps.getLongitude() + network.getLongitude()) / 2 * 1e6;
+			mc.animateTo(new GeoPoint((int) avgLate6, (int) avgLone6));
+			// add a padding factor
+			mc.zoomToSpan((int) (diffLate6 * 1.1), (int) (diffLone6 * 1.1));
+		} else if (network != null) {
+			mc.animateTo(new GeoPoint((int) (network.getLatitude() * 1e6),
+					(int) (network.getLongitude() * 1e6)));
+		} else if (gps != null) {
+			mc.animateTo(new GeoPoint((int) (gps.getLatitude() * 1e6),
+					(int) (gps.getLongitude() * 1e6)));
+		} else {
+			Log.i(this.getClass().getSimpleName(), "gps and network both null");
+		}
 	}
 
 	/** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-    	
-        mapview = (MapView) findViewById(R.id.mapview);
-        mapview.setBuiltInZoomControls(true);
-        mapview.setClickable(true); 
-        mapview.setEnabled(true); 
-        mapview.setSatellite(false); 
-        mapview.setTraffic(false); 
-     // start out with a general zoom 
-        final MapController mc = mapview.getController();
-        mc.setZoom(16);
-        
-        LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        model = new PhoneLocationModel(lm, this);
-        
-        Location gps = model.getGPSLocation();
-        Location network = model.getNetworkLocation();
-        
-        if (gps != null && network != null) {
-        	updateMarkers();
-        }
-        
-        //timer = new Timer();
-        //new Thread(timer).start();
-        
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		mapview = (MapView) findViewById(R.id.mapview);
+		mapview.setBuiltInZoomControls(true);
+		mapview.setClickable(true);
+		mapview.setEnabled(true);
+		mapview.setSatellite(false);
+		mapview.setTraffic(false);
+		// start out with a general zoom
+		final MapController mc = mapview.getController();
+		mc.setZoom(16);
+
         LocationObserver locObs = new LocationObserver(new Handler());
-        this.getContentResolver().registerContentObserver(LocationContentProvider.LOCATIONS_URI, 
-        		true, locObs);
-    }
+		this.getContentResolver().registerContentObserver(
+				LocationContentProvider.LOCATIONS_URI, true, locObs);
+		
+		LocationManager lm = (LocationManager) this
+				.getSystemService(Context.LOCATION_SERVICE);
+		model = new PhoneLocationModel(lm, this);
+	}
 
 	@Override
 	protected boolean isRouteDisplayed() {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-	    menu.add(Menu.NONE, 1, Menu.NONE, "Email Location").setAlphabeticShortcut('e');
-	    menu.add(Menu.NONE, 2, Menu.NONE, "Dump locations").setAlphabeticShortcut('d');
-	    menu.add(Menu.NONE, 3, Menu.NONE, "Exit").setAlphabeticShortcut('x');
-	    return true;
+		menu.add(Menu.NONE, 1, Menu.NONE, "Email Location")
+				.setAlphabeticShortcut('e');
+		menu.add(Menu.NONE, 2, Menu.NONE, "Dump locations")
+				.setAlphabeticShortcut('d');
+		menu.add(Menu.NONE, 3, Menu.NONE, "Exit").setAlphabeticShortcut('x');
+		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -180,69 +159,74 @@ public class GPSvsNetworkMap extends MapActivity {
 			Location locG = model.getGPSLocation();
 			Location locN = model.getNetworkLocation();
 			String body;
-            List<Overlay> mapOverlays = mapview.getOverlays();
-            int itemCnt = mapOverlays.size();
+			List<Overlay> mapOverlays = mapview.getOverlays();
+			int itemCnt = mapOverlays.size();
 			if (locG != null && locN != null) {
-				String text = "My current locations:\n" +
-						"GPS    : "	+ (locG != null ? locG.getLatitude() : -999)
-						+ ", " + (locG != null ? locG.getLongitude() : -999) + "\n" 
-						+ "Network: "	+ (locN != null ? locN.getLatitude() : -999)
-						+ ", " + (locN != null ? locN.getLongitude() : -999) + "\n"
+				String text = "My current locations:\n" + "GPS    : "
+						+ (locG != null ? locG.getLatitude() : -999) + ", "
+						+ (locG != null ? locG.getLongitude() : -999) + "\n"
+						+ "Network: "
+						+ (locN != null ? locN.getLatitude() : -999) + ", "
+						+ (locN != null ? locN.getLongitude() : -999) + "\n"
 						+ "Number of items in the list: " + itemCnt;
 				String qmap_link;
 				try {
 					String query_string = "size=512x512"
-					     + "&markers=" 
-						 + URLEncoder.encode("color:blue|label:G|" 
-					             + locG.getLatitude() + "," + locG.getLongitude(), "UTF-8")
-					     + "&markers="
-					     + URLEncoder.encode("color:green|label:N|" 
-					             + locN.getLatitude() + "," + locN.getLongitude(), "UTF-8")
-					     + "&sensor=true";
-					qmap_link = "http://maps.googleapis.com/maps/api/staticmap?" + query_string;
+							+ "&markers="
+							+ URLEncoder.encode(
+									"color:blue|label:G|" + locG.getLatitude()
+											+ "," + locG.getLongitude(),
+									"UTF-8")
+							+ "&markers="
+							+ URLEncoder.encode(
+									"color:green|label:N|" + locN.getLatitude()
+											+ "," + locN.getLongitude(),
+									"UTF-8") + "&sensor=true";
+					qmap_link = "http://maps.googleapis.com/maps/api/staticmap?"
+							+ query_string;
 				} catch (UnsupportedEncodingException e) {
 					qmap_link = e.getMessage();
 				}
 				body = text + "\n " + qmap_link;
-			}
-			else {
+			} else {
 				body = "(location unknown!)";
-			}			
+			}
 			addr = Uri.fromParts("mailto", "jimhopp@gmail.com", null);
 			email = new Intent(Intent.ACTION_SENDTO, addr);
 			email.putExtra(Intent.EXTRA_TEXT, body);
 			email.putExtra(Intent.EXTRA_SUBJECT, "my location");
-			if (getPackageManager().resolveActivity(email, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+			if (getPackageManager().resolveActivity(email,
+					PackageManager.MATCH_DEFAULT_ONLY) != null) {
 				startActivity(email);
-			}
-			else {
-				Toast toast = Toast.makeText(this, "Sorry, email not configured on this device",
+			} else {
+				Toast toast = Toast.makeText(this,
+						"Sorry, email not configured on this device",
 						Toast.LENGTH_SHORT);
-				toast.show();			
+				toast.show();
 			}
 			return true;
-			
-		case 2: 
+
+		case 2:
 			addr = Uri.fromParts("mailto", "jimhopp@gmail.com", null);
 			email = new Intent(Intent.ACTION_SENDTO, addr);
 			email.putExtra(Intent.EXTRA_TEXT, model.dumpLocations());
 			email.putExtra(Intent.EXTRA_SUBJECT, "my locations");
-			if (getPackageManager().resolveActivity(email, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+			if (getPackageManager().resolveActivity(email,
+					PackageManager.MATCH_DEFAULT_ONLY) != null) {
 				startActivity(email);
-			}
-			else {
-				Toast toast = Toast.makeText(this, "Sorry, cannot find an editor on this device",
+			} else {
+				Toast toast = Toast.makeText(this,
+						"Sorry, cannot find an editor on this device",
 						Toast.LENGTH_SHORT);
-				toast.show();			
+				toast.show();
 			}
 			return true;
-		case 3: 
-			//timer.done();
+		case 3:
 			finish();
 			return true;
 
 		default:
-				break;
+			break;
 		}
 		return false;
 	}
