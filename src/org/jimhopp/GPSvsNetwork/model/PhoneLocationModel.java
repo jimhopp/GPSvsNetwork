@@ -92,6 +92,14 @@ public class PhoneLocationModel {
 	}
 	
 	void recordLocation(Location loc, String tag) {
+		if (loc == null) {
+			Log.i(this.getClass().getSimpleName(), "loc is null for tag " + tag);
+			return;
+		}
+		if (Math.abs(loc.getLatitude()) < 0.1 && Math.abs(loc.getLongitude()) < 0.1 && loc.getAccuracy() > 1e6) {
+			Log.i(this.getClass().getSimpleName(), "loc is empty for tag " + tag);
+			return;
+		}
 		ContentValues map = new ContentValues(); 
 		map.put(LocationsContentProvider.TIME_COL, loc != null ? loc.getTime() : System.currentTimeMillis()); 
 		map.put(LocationsContentProvider.TYPE_COL, tag);
