@@ -1,6 +1,7 @@
 package org.jimhopp.GPSvsNetwork.test;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.KeyEvent;
 
 import org.jimhopp.GPSvsNetwork.GPSvsNetworkMap;
 
@@ -37,5 +38,11 @@ public class GPSvsNetworkMapTest extends
 
 	public void testName() {
 		assertEquals(resourceString, "GPS vs. Network Location");
+	}
+	
+	public void testMenuExit() {
+		this.sendKeys(KeyEvent.KEYCODE_MENU);
+		this.sendKeys(KeyEvent.KEYCODE_X);
+		assertTrue(mActivity.isFinishing());
 	}
 }
