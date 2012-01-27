@@ -223,6 +223,7 @@ public class GPSvsNetworkMap extends MapActivity {
 			return true;
 		case 3:
 			finish();
+			Log.i(this.getClass().getSimpleName(), "called finish(); isFinishing() says " + isFinishing());
 			return true;
 
 		default:
