@@ -19,7 +19,7 @@ public class GPSvsNetworkMapTest extends
 	}
 
 	public GPSvsNetworkMapTest() {
-		super("org.jimhopp.GPSvsNetwork", GPSvsNetworkMap.class);
+		super(GPSvsNetworkMap.class);
 	}
 
 	@Override
@@ -44,5 +44,13 @@ public class GPSvsNetworkMapTest extends
 		this.sendKeys(KeyEvent.KEYCODE_MENU);
 		this.sendKeys(KeyEvent.KEYCODE_X);
 		assertTrue(mActivity.isFinishing());
+	}
+	
+	public void testDumpLocations() {
+// this doesn't really work, because the email application comes to the front. Probably need to 
+// change the test to pull up the menu and simply confirm the menu's content. 
+		this.sendKeys(KeyEvent.KEYCODE_MENU);
+		this.sendKeys(KeyEvent.KEYCODE_D);
+		assertFalse(mActivity.isFinishing());
 	}
 }
