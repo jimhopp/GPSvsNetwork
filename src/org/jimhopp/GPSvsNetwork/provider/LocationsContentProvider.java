@@ -193,9 +193,9 @@ public class LocationsContentProvider extends ContentProvider {
                         LocationContentProvider.LOCATIONS_URI);
             	break;
             case ONE_LOC:
-            	throw new IllegalArgumentException("not yet supported: " + uri);
+            	throw new IllegalArgumentException("single location request not yet supported: " + uri);
             default:
-                throw new IllegalArgumentException("unsupported uri: " + uri);
+                throw new IllegalArgumentException("unrecognized uri format: " + uri);
         }
 
         return c;
