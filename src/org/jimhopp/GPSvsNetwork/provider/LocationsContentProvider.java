@@ -193,7 +193,16 @@ public class LocationsContentProvider extends ContentProvider {
                         LocationContentProvider.LOCATIONS_URI);
             	break;
             case ONE_LOC:
-            	throw new IllegalArgumentException("single location request not yet supported: " + uri);
+            	long id = ContentUris.parseId(uri);
+            	c = dbh.getReadableDatabase().query(LOCATIONS_TABLE_NAME, COL_NAMES,
+                        BaseColumns._ID + " = " + id,
+                        null,
+                        null, 
+                        null, 
+                        orderBy);
+                c.setNotificationUri(getContext().getContentResolver(),
+                        LocationContentProvider.LOCATIONS_URI);
+            	break;
             default:
                 throw new IllegalArgumentException("unrecognized uri format: " + uri);
         }
