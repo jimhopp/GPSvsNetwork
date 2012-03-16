@@ -97,11 +97,6 @@ public class LocationsContentProvider extends ContentProvider {
 	}
     
     //do not need a no-arg constructor?
-    
-	@Override
-	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		throw new RuntimeException("delete not supported");
-	}
 
 	@Override
 	public String getType(Uri uri) {
@@ -216,5 +211,19 @@ public class LocationsContentProvider extends ContentProvider {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("update not supported");
 	}
+	@Override
+	public int delete(Uri uri, String selection, String[] selectionArgs) {
+        int match = sURIMatcher.match(uri);
+        int cnt = 0;
+        switch (match) {
+            case ALL_LOCS:
+            	cnt = dbh.getWritableDatabase().delete(LOCATIONS_TABLE_NAME, selection, 
+            			selectionArgs);
+            	break;
 
+            default:
+                throw new IllegalArgumentException("unrecognized uri format: " + uri);
+        }
+        return cnt;
+	}
 }
