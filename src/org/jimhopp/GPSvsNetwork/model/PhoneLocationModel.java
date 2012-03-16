@@ -20,6 +20,7 @@ public class PhoneLocationModel {
 	private Context ctxt;
 	
 	public PhoneLocationModel(LocationManager lm, Context ctxt) {
+		Log.i(this.getClass().getSimpleName(), "initializing phone location model");
 		this.ctxt = ctxt;
 		LocationListener locationGPS = new LocationListener() {
 			@Override
@@ -32,6 +33,7 @@ public class PhoneLocationModel {
 			public void onStatusChanged(String providerName, int providerStatus,
 					Bundle extras) { }
         };
+		
         updateGPS(lm.getLastKnownLocation(LocationManager.GPS_PROVIDER));
 
         lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000l, Float.valueOf("10.0"),
@@ -52,6 +54,7 @@ public class PhoneLocationModel {
 
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 30000l, Float.valueOf("10.0"),
         	locationNetwork);
+        Log.i(this.getClass().getSimpleName(), "finished initializing phone location model");
 	}
 	
 	public Location getLocation(String path) { 
