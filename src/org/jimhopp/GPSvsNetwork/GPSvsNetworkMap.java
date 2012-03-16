@@ -46,6 +46,8 @@ public class GPSvsNetworkMap extends MapActivity {
 			updateMarkers();
 		}
 	}
+	
+	public PhoneLocationModel getModel() { return model; }
 
 	void updateMarkers() {
 		Log.i(this.getClass().getSimpleName(), "updateMarkers called");
